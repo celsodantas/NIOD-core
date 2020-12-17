@@ -9,9 +9,8 @@ export type Store = {
     ownPort: number;
     distantPort: number;
   };
-  sentMessages: Message[];
-  receivedMessages: Message[];
-  callbacks: Map<string, Callback<any>>;
+  sentMessages: Map<string, Message>;
+  // callbacks: Map<string, Callback<any>>;
   server: Socket | undefined;
   networkSend: NetworkSend | undefined;
   eventHandlers: {

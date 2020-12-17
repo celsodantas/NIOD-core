@@ -1,6 +1,15 @@
 package.path = package.path .. ";.\\LuaSocket\\?.lua"
 package.cpath = package.cpath .. ";.\\LuaSocket\\?.dll"
 
+-- forward declarations to make the Lua compiler stop complaining about DCS global variables
+-- not existing in the scope
+env = env
+timer = timer
+coalition = coalition
+World = World
+Group = Group
+world = world
+
 local socket = require("socket")
 local JSON = loadfile("Scripts\\JSON.lua")()
 
