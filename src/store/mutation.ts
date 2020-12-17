@@ -13,7 +13,6 @@ export const mutationNames = {
   SET_CONFIG: "setConfig",
   SET_SERVER: "setServer",
   SET_NETWORK_SEND: "setNetworkSend",
-  SET_SENT_MESSAGES: "setSentMessages",
   SET_EVENT_HANDLERS: "setEventHandlers"
 };
 
@@ -30,10 +29,6 @@ const mutations = {
     (store.networkSend = networkSend)
   },
   
-  [mutationNames.SET_SENT_MESSAGES]: ({sentMessages}: {sentMessages: Message[];}) => {
-    store.sentMessages = sentMessages;
-  },
-
   [mutationNames.SET_EVENT_HANDLERS]: 
     ({eventHandlers}: {eventHandlers: {[key: number]: Map<string, EventHandler<any>>;};}) => {
     store.eventHandlers = eventHandlers;

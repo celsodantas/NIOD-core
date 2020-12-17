@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { Message, MessageType } from "./types/message_types";
 import { getStore } from "./store/store";
-import { enqueue, removeFromQueue, handleQueue } from "./queue";
 import { mutate, mutationNames } from "./store/mutation";
 import { Callback } from "./types/dispatch_types";
 import { handleEvent } from "./dcs/event";
@@ -14,10 +13,7 @@ export const sendMessage = (message: Message) => {
     return;
   }
   networkSend(JSON.stringify(message));
-  enqueue(message, getStore().sentMessages, (sentMessages: Message[]) =>
-    mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages })
-  );
-  //console.log("Sent", message);
+  getStore().sentMessages.set(message.id, message)
 };
 
 /** @internal */
@@ -41,11 +37,10 @@ export const createMessage = <R>(
 const handleFunction = (message: Message) => {};
 
 const handleReceived = (message: Message) => {
-  const queuedMessage = removeFromQueue(
-    message,
-    getStore().sentMessages,
-    (sentMessages: Message[]) => { mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages }) }
-  );
+  
+  const queuedMessage = getStore().sentMessages.get(message.id)
+  getStore().sentMessages.delete(message.id)
+
   if (!queuedMessage) {
     return;
   }
@@ -72,9 +67,21 @@ export const handleMessage = (message: Message) => {
 };
 
 setInterval(() => {
-  handleQueue(
-    getStore().sentMessages,
-    (sentMessages: Message[]) => { mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages }) },
-    sendMessage
-  );
+  getStore().sentMessages.forEach(message => {
+    if (Date.now() - message.sentAt <= 5000) {
+      return;
+    }
+
+    if (message.retries < 5) {
+      console.log(`retrying msg... ${message.id}, retries: ${message.retries}`)
+      message.retries += 1
+
+      sendMessage(message);
+    } else if (message.errorCallback) {
+      console.log(`TIMEOUT msg... ${message.id}`)
+
+      getStore().sentMessages.delete(message.id)
+      message.errorCallback()
+    }
+  });
 }, 2000);
