@@ -75,7 +75,8 @@ export const executeFunction = <T, R>(functionName: string, args: T) =>
           functionName,
           args
         },
-        result => resolve(result)
+        (result) => { resolve(result) },
+        () => { reject() }
       )
     )
   );

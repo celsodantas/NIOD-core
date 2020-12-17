@@ -8,7 +8,6 @@ export const store: Store = {
     distantPort: 15488
   },
   sentMessages: [],
-  receivedMessages: [],
   callbacks: new Map<string, Callback<any>>(),
   server: undefined,
   networkSend: undefined,

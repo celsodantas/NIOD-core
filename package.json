@@ -2,8 +2,8 @@
   "name": "niod-core",
   "version": "0.1.0-beta.3",
   "description": "NIOD is a JS API for DCS World, NIOD-core is the core lib of the NIOD ecosystem. It uses a socket to communicate with a LUA library",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "start": "ts-node src/app.ts",
     "build": "tsc --declaration",

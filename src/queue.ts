@@ -41,13 +41,22 @@ export const handleQueue = (
   messageHandler: (message: Message) => void
 ) => {
   queue.forEach(message => {
-    if (Date.now() - message.sent <= 5000) {
+    if (Date.now() - message.sentAt <= 5000) {
       return;
     }
     const dequeuedMessage = removeFromQueue(message, queue, setter);
     if (!dequeuedMessage) {
       return;
     }
-    messageHandler(dequeuedMessage);
+
+    if (dequeuedMessage.retries < 5) {
+      console.log(`retrying msg... ${dequeuedMessage.id}, retries: ${dequeuedMessage.retries}`)
+      dequeuedMessage.retries += 1
+
+      messageHandler(dequeuedMessage);
+    } else if (dequeuedMessage.errorCallback) {
+      console.log(`TIMEOUT msg... ${dequeuedMessage.id}`)
+      dequeuedMessage.errorCallback()
+    }
   });
 };

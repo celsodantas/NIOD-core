@@ -12,9 +12,12 @@ export type MessageType =
 export type Message = {
   id: string;
   type: MessageType;
-  callbackId: string | undefined;
+  // callbackId: string | undefined;
+  successCallback?: Function;
+  errorCallback?: Function;
   payload: { [key: string]: string | boolean | number };
-  sent: number;
+  sentAt: number;
+  retries: number;
 };
 
 export const isMessageTypeFunction = (

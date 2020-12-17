@@ -4,7 +4,6 @@ import { getStore } from "./store/store";
 import { enqueue, removeFromQueue, handleQueue } from "./queue";
 import { mutate, mutationNames } from "./store/mutation";
 import { Callback } from "./types/dispatch_types";
-import { storeCallback, executeCallback } from "./dispatch";
 import { handleEvent } from "./dcs/event";
 
 /** @internal */
@@ -25,14 +24,17 @@ export const sendMessage = (message: Message) => {
 export const createMessage = <R>(
   type: MessageType,
   payload: { [key: string]: any },
-  callback?: Callback<R>
+  successCallback: Callback<R>,
+  errorCallback: Callback<R>
 ): Message => {
   return {
     id: uuidv4().toString(),
     type,
-    callbackId: storeCallback<R>(callback),
+    successCallback: successCallback,
+    errorCallback: errorCallback,
     payload,
-    sent: Date.now()
+    sentAt: Date.now(),
+    retries: 0
   };
 };
 
@@ -42,13 +44,15 @@ const handleReceived = (message: Message) => {
   const queuedMessage = removeFromQueue(
     message,
     getStore().sentMessages,
-    (sentMessages: Message[]) =>
-      mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages })
+    (sentMessages: Message[]) => { mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages }) }
   );
   if (!queuedMessage) {
     return;
   }
-  executeCallback(queuedMessage.callbackId, message.payload);
+
+  if (queuedMessage.successCallback) {
+    queuedMessage.successCallback(message.payload)
+  }
 };
 
 const messageHandlers = {
@@ -70,8 +74,7 @@ export const handleMessage = (message: Message) => {
 setInterval(() => {
   handleQueue(
     getStore().sentMessages,
-    (sentMessages: Message[]) =>
-      mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages }),
+    (sentMessages: Message[]) => { mutate(mutationNames.SET_SENT_MESSAGES, { sentMessages }) },
     sendMessage
   );
 }, 2000);

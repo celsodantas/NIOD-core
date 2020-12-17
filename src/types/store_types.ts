@@ -10,7 +10,6 @@ export type Store = {
     distantPort: number;
   };
   sentMessages: Message[];
-  receivedMessages: Message[];
   callbacks: Map<string, Callback<any>>;
   server: Socket | undefined;
   networkSend: NetworkSend | undefined;
